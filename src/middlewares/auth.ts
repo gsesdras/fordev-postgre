@@ -25,8 +25,8 @@ const authMiddleware = async (
     return res.status(400).json({ message: "Token Invalid" });
 
   try {
-    const decoded = await promisify(jwt.verify)(token, "secret");
-    req.userId = decoded.id;
+    const decoded = await promisify(jwt.verify)(token, "secret") as DecodedJwt
+    req.headers.userId = decoded.id;
 
     return next();
   } catch (err) {
