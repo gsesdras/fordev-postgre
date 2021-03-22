@@ -26,7 +26,7 @@ const authMiddleware = async (
 
   try {
     const decoded = await promisify(jwt.verify)(token, "secret") as DecodedJwt
-    req.headers.userId = decoded.id;
+    req.headers.userId = decoded.id.toString();
 
     return next();
   } catch (err) {
