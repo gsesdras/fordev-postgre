@@ -1,16 +1,29 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn } from "typeorm";
+import {v4 as uuid } from 'uuid'
 
 @Entity("users")
-export default class User {
-  @PrimaryGeneratedColumn("increment")
-  id: number;
+class User {
+
+  @PrimaryColumn()
+  readonly id: string
 
   @Column()
-  name: string;
+  name: string
 
   @Column()
-  email: string;
+  email: string
 
   @Column()
-  password: string;
+  password: string
+
+  @CreateDateColumn()
+  created_at: Date
+
+  constructor(){
+    if(!this.id){
+      this.id = uuid()
+    }
+  }
 }
+
+export { User }
