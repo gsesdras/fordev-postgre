@@ -78,7 +78,7 @@ class UserController {
       return res.json({
         name: user.name,
         email,
-        token,
+        token: `Bearer ${token}`,
       });
     } catch (error) {
       throw new AppError(error);
