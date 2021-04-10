@@ -65,7 +65,7 @@ class UserController {
     try {
       await schema.validate(req.body, { abortEarly: false });
     } catch (error) {
-      throw new AppError(error);
+      throw new AppError(error)
     }
 
     const user = await usersRepository.findOne({ email });
