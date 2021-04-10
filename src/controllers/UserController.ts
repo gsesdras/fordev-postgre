@@ -49,6 +49,41 @@ class UserController {
       return res.status(201).json({ message: "User Created", user, token: `Bearer ${token}` });
     })
   }
+
+  async auth(req: Request, res: Response){
+    const usersRepository = getCustomRepository(UsersRepository);
+
+    const { email, password } = req.body;
+
+    const schema = yup.object().shape({
+      email: yup.string().email().required(),
+      password: yup.string().required()
+    });
+
+    try {
+      await schema.validate(req.body, { abortEarly: false });
+
+      const user = await usersRepository.findOne({ email });
+      if (!user) {
+        return res.status(400).json({ message: "User doesn't exist" });
+      }
+      const comparePass = bcrypt.compareSync(password, user.password);
+
+      if (!comparePass) {
+        return res.status(400).json({ message: "Password doesn't match'" });
+      }
+
+      const token = genToken(user.id);
+
+      return res.json({
+        name: user.name,
+        email,
+        token,
+      });
+    } catch (error) {
+      throw new AppError(error);
+    }
+  }
 }
 
 export { UserController };
