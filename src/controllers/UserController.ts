@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 
 function genToken(id: string) {
   return jwt.sign({ id }, process.env.JWT_SECRET || "secret", {
-    expiresIn: 86400,
+    expiresIn: 604800,
   });
 }
 async function verifyToken(token: string) {
@@ -22,7 +22,7 @@ class UserController {
     const schema = yup.object().shape({
       name: yup.string().required(),
       email: yup.string().email().required(),
-      password: yup.string().required()
+      password: yup.string().required(),
     });
 
     try {
@@ -45,44 +45,42 @@ class UserController {
       });
 
       await usersRepository.save(user);
-      const token = genToken(user.id)
-      return res.status(201).json({ message: "User Created", user, token: `Bearer ${token}` });
-    })
+      const token = genToken(user.id);
+      return res
+        .status(201)
+        .json({ message: "User Created", user, token: `Bearer ${token}` });
+    });
   }
 
-  async auth(req: Request, res: Response){
+  async auth(req: Request, res: Response) {
     const usersRepository = getCustomRepository(UsersRepository);
 
     const { email, password } = req.body;
 
     const schema = yup.object().shape({
       email: yup.string().email().required(),
-      password: yup.string().required()
+      password: yup.string().required(),
     });
 
     try {
       await schema.validate(req.body, { abortEarly: false });
-
-      const user = await usersRepository.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ message: "User doesn't exist" });
-      }
-      const comparePass = bcrypt.compareSync(password, user.password);
-
-      if (!comparePass) {
-        return res.status(400).json({ message: "Password doesn't match'" });
-      }
-
-      const token = genToken(user.id);
-
-      return res.json({
-        name: user.name,
-        email,
-        token: `Bearer ${token}`,
-      });
     } catch (error) {
       throw new AppError(error);
     }
+
+    const user = await usersRepository.findOne({ email });
+    if (!user) throw new AppError("User doesn't exist");
+
+    const comparePass = bcrypt.compareSync(password, user.password);
+    if (!comparePass) throw new AppError("Password doesn't match");
+
+    const token = genToken(user.id);
+
+    return res.json({
+      message: "Logged in",
+      user,
+      token: `Bearer ${token}`,
+    });
   }
 }
 
